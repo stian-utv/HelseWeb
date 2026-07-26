@@ -84,7 +84,11 @@ export async function renderApp(root: HTMLElement): Promise<void> {
           <div class="sidebar-header-top">
             <div>
               <h1>HelseApp</h1>
-              <p>Loggfør helsen din dag for dag.</p>
+              <p class="sidebar-tagline">Loggfør helsen din dag for dag.</p>
+              <p class="app-disclaimer">
+                Hobbyprosjekt for egen testing — ikke medisinsk råd. Bruk på eget ansvar.
+                Data lagres kun lokalt i nettleseren din.
+              </p>
             </div>
             ${dataMenuMarkup()}
           </div>

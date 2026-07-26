@@ -28,10 +28,16 @@ export function openWelcomeModal(options: { force?: boolean } = {}): void {
         <p class="modal-kicker">Velkommen</p>
         <h2 id="welcome-title">HelseApp Web</h2>
         <p class="welcome-lead">
-          En enkel app for å logge helse, symptomer, medisin og blodprøver — direkte i nettleseren.
+          Dette er et hobbyprosjekt laget for egen testing — ikke et produkt eller medisinsk tjeneste.
+          Du kan logge helse, symptomer, medisin og blodprøver direkte i nettleseren.
         </p>
 
         <ul class="welcome-points">
+          <li>
+            <strong>Hobby / egen testing.</strong>
+            Appen er ikke ment som noe annet enn et personlig eksperiment. Den er ikke et
+            profesjonelt helseverktøy.
+          </li>
           <li>
             <strong>Kun lokal lagring.</strong>
             Dataene dine ligger i denne nettleseren (IndexedDB). Ingenting sendes til en server.
@@ -43,11 +49,12 @@ export function openWelcomeModal(options: { force?: boolean } = {}): void {
           </li>
           <li>
             <strong>Ikke medisinsk råd.</strong>
-            Appen er et personlig loggeverktøy, ikke diagnose, behandling eller helsefaglig veiledning.
+            Appen er ikke diagnose, behandling eller helsefaglig veiledning.
           </li>
           <li>
             <strong>På eget ansvar.</strong>
-            Bruk skjer uten garanti. Ta vare på egne eksporter hvis du vil ha sikkerhetskopi.
+            Bruk skjer uten garanti. Utvikleren påtar seg intet ansvar. Ta vare på egne
+            eksporter hvis du vil ha sikkerhetskopi.
           </li>
         </ul>
 

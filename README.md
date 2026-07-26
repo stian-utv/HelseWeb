@@ -1,5 +1,8 @@
 # HelseApp Web
 
+> **Ansvarsfraskrivelse / hobbyprosjekt**  
+> Dette er et **privat hobbyprosjekt** laget for å teste og logge for egen del. Det er **ikke** et produkt, en tjeneste, medisinsk verktøy eller profesjonell løsning. Det er **ikke ment** som diagnose, behandling, helsefaglig veiledning eller erstatning for kontakt med helsepersonell. Bruk skjer **helt på eget ansvar**, uten garantier. Utvikleren påtar seg **intet ansvar** for konsekvenser av bruk, feil, datatap eller tolkning av innhold. Se også avsnittet [Ansvarsfraskrivelse (viktig)](#ansvarsfraskrivelse-viktig) lenger ned.
+
 Nettleserbasert versjon av HelseApp for daglig logging av helsescore, symptomer, medisin/B12, trackere, blodprøver, innsikt og grafer.
 
 Appen er **statisk** (ingen backend) og lagres som vanlige filer. Den kan hostes gratis på **GitHub Pages**.
