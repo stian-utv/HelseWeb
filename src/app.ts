@@ -87,7 +87,8 @@ export async function renderApp(root: HTMLElement): Promise<void> {
               <p class="sidebar-tagline">Loggfør helsen din dag for dag.</p>
               <p class="app-disclaimer">
                 Hobbyprosjekt for egen testing — ikke medisinsk råd. Bruk på eget ansvar.
-                Data lagres kun lokalt i nettleseren din.
+                Data lagres lokalt i nettleseren (ikke kryptert). Delt profil eller nettleser-synk
+                kan gjøre data synlige på andre enheter eller for andre brukere.
               </p>
             </div>
             ${dataMenuMarkup()}

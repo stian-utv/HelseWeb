@@ -40,12 +40,19 @@ export function openWelcomeModal(options: { force?: boolean } = {}): void {
           </li>
           <li>
             <strong>Kun lokal lagring.</strong>
-            Dataene dine ligger i denne nettleseren (IndexedDB). Ingenting sendes til en server.
+            Dataene dine ligger i denne nettleseren (IndexedDB) og er ikke kryptert. Appen sender
+            ingenting selv til en server.
           </li>
           <li>
-            <strong>Ingen konto.</strong>
-            Du logger ikke inn. Bytter du enhet eller sletter nettleserdata, forsvinner loggen
-            med mindre du har eksportert en JSON-fil under Data.
+            <strong>Delt nettleser / synk.</strong>
+            Bruker du en delt PC/profil, eller en nettleser som synker data mellom enheter
+            (f.eks. Chrome-/Safari-/Firefox-synk), kan loggen synces eller ses av andre med
+            tilgang. Det styres av nettleseren — ikke av denne appen.
+          </li>
+          <li>
+            <strong>Ingen konto i appen.</strong>
+            Du logger ikke inn her. Bytter du enhet eller sletter nettleserdata, forsvinner
+            loggen med mindre du har eksportert en JSON-fil under Data.
           </li>
           <li>
             <strong>Ikke medisinsk råd.</strong>

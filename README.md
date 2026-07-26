@@ -1,7 +1,8 @@
 # HelseApp Web
 
 > **Ansvarsfraskrivelse / hobbyprosjekt**  
-> Dette er et **privat hobbyprosjekt** laget for å teste og logge for egen del. Det er **ikke** et produkt, en tjeneste, medisinsk verktøy eller profesjonell løsning. Det er **ikke ment** som diagnose, behandling, helsefaglig veiledning eller erstatning for kontakt med helsepersonell. Bruk skjer **helt på eget ansvar**, uten garantier. Utvikleren påtar seg **intet ansvar** for konsekvenser av bruk, feil, datatap eller tolkning av innhold. Se også avsnittet [Ansvarsfraskrivelse (viktig)](#ansvarsfraskrivelse-viktig) lenger ned.
+> Dette er et **privat hobbyprosjekt** laget for å teste og logge for egen del. Det er **ikke** et produkt, en tjeneste, medisinsk verktøy eller profesjonell løsning. Det er **ikke ment** som diagnose, behandling, helsefaglig veiledning eller erstatning for kontakt med helsepersonell. Bruk skjer **helt på eget ansvar**, uten garantier. Utvikleren påtar seg **intet ansvar** for konsekvenser av bruk, feil, datatap eller tolkning av innhold.  
+> **Lokal lagring er ikke det samme som privat for alle:** Appen sender ikke data selv, men hvis du bruker en **delt nettleser/PC**, eller en nettleser med **sky-synk** (f.eks. Chrome-/Safari-/Firefox-synk mellom enheter), kan loggen synces eller bli synlig for andre med tilgang til samme profil/enhet. Se også [Ansvarsfraskrivelse (viktig)](#ansvarsfraskrivelse-viktig).
 
 Nettleserbasert versjon av HelseApp for daglig logging av helsescore, symptomer, medisin/B12, trackere, blodprøver, innsikt og grafer.
 
@@ -10,8 +11,9 @@ Appen er **statisk** (ingen backend) og lagres som vanlige filer. Den kan hostes
 ## Hvordan appen fungerer
 
 - Alt lagres **lokalt i nettleseren** via IndexedDB på enheten din.
-- **Ingen konto**, ingen innlogging, ingen sky-synkronisering.
+- **Ingen konto** i appen, og appen selv har **ingen sky-synk**.
 - Data sendes **ikke** til noen server fra appen selv.
+- **Obs:** Nettleserens egen synk (f.eks. innlogget Chrome/Safari/Firefox mellom telefon og PC) eller en **delt brukerprofil** kan likevel kopiere eller vise lokal lagring. Bruk egen profil, og vær bevisst på nettleser-synk hvis dataene er sensitive.
 - Du kan **eksportere/importere JSON** (v2, kompatibel med Mac-appen) via Data-menyen — dette er også måten du tar sikkerhetskopi på.
 - Sletter du nettleserdata, bruker privat modus, eller bytter enhet/nettleser, kan loggen forsvinne hvis du ikke har eksportert.
 
@@ -75,7 +77,9 @@ Hvis du bruker custom domain på root (uten undermappe), sett `VITE_BASE` til `/
 - Appen er laget for **lokal, personlig bruk**.
 - Utvikleren mottar ikke helseopplysningene dine gjennom denne appen.
 - GitHub (eller annen host) leverer bare de statiske filene (HTML/JS/CSS). Selve loggdataene ligger i nettleseren hos brukeren.
-- Vær oppmerksom på at andre med tilgang til samme brukerprofil/enhet i teorien kan se lokal nettleserdata.
+- **Delt nettleser / delt PC:** Andre som bruker samme konto eller brukerprofil kan typisk åpne appen og se loggen.
+- **Nettleser-synk:** Hvis nettleseren synkroniserer data mellom enheter, kan lokal lagring følge med — det styres av nettleseren/leverandøren, ikke av denne appen.
+- Dataene er **ikke kryptert** i IndexedDB. Beskyttelse avhenger av enhetens skjermlås, hvem som har tilgang, og nettleserinnstillingene dine.
 
 ## Ansvarsfraskrivelse (viktig)
 
@@ -88,8 +92,9 @@ Ved å bruke appen aksepterer du at:
 1. Du bruker den **på eget ansvar**.
 2. Du selv er ansvarlig for beslutninger knyttet til egen helse, medisinering og oppfølging.
 3. Du selv er ansvarlig for **sikkerhetskopiering** (JSON-eksport) og for tap av data ved sletting av nettleserlagring, feil, oppdateringer eller andre hendelser.
-4. Utvikleren / rettighetshaver påtar seg **intet ansvar** for direkte eller indirekte tap, skade, feilbehandling, feilaktig tolkning av logger, datatap eller andre konsekvenser som følger av bruk eller manglende mulighet til å bruke appen.
-5. Innhold, beregninger (f.eks. B12-intervall) og visualiseringer er kun hjelpemidler for personlig oversikt og kan være ufullstendige eller feil.
+4. Du selv er ansvarlig for **hvordan og hvor** du bruker appen — inkludert delt PC/nettleser, nettleser-synk mellom enheter, og at andre med tilgang til profilen kan se loggen.
+5. Utvikleren / rettighetshaver påtar seg **intet ansvar** for direkte eller indirekte tap, skade, feilbehandling, feilaktig tolkning av logger, datatap, uønsket synk/deling via nettleser, eller andre konsekvenser som følger av bruk eller manglende mulighet til å bruke appen.
+6. Innhold, beregninger (f.eks. B12-intervall) og visualiseringer er kun hjelpemidler for personlig oversikt og kan være ufullstendige eller feil.
 
 Hvis du er usikker på symptomer, prøvesvar eller behandling: kontakt lege eller annet kvalifisert helsepersonell.
 
