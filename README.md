@@ -100,4 +100,4 @@ Hvis du er usikker på symptomer, prøvesvar eller behandling: kontakt lege elle
 
 ## Lisens / bruk
 
-Koden i dette repoet kan brukes og deles fritt til personlige formål med mindre annet er oppgitt senere. Appen leveres uten support-forpliktelse.
+Koden er lisensiert under **MIT** — se [`LICENSE`](LICENSE). Programvaren leveres «som den er», uten garanti. Appen leveres uten support-forpliktelse.
