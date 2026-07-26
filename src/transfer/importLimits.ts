@@ -1,17 +1,19 @@
 /** Grenseverdier for JSON-import (DoS / minne). */
 
+/** Grenser tilpasset testversjon (~1 års bruk). */
 export const IMPORT_LIMITS = {
-  /** Maks filstørrelse (5 MB). */
-  maxBytes: 5 * 1024 * 1024,
-  maxDailyLogs: 15_000,
-  maxMedications: 500,
-  maxTrackers: 500,
-  maxTrackerValues: 100_000,
-  maxLabResults: 10_000,
-  maxNoteChars: 8_000,
+  /** Maks filstørrelse (1 MB). */
+  maxBytes: 1 * 1024 * 1024,
+  maxDailyLogs: 366,
+  maxMedications: 15,
+  maxTrackers: 15,
+  /** Ca. 1 år × 15 trackere. */
+  maxTrackerValues: 5_500,
+  maxLabResults: 150,
+  maxNoteChars: 1_000,
   maxNameChars: 80,
   maxUnitChars: 40,
-  maxExtraSymptomKeys: 80,
+  maxExtraSymptomKeys: 40,
 } as const;
 
 export function formatMaxImportSize(): string {
