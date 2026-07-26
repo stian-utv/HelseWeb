@@ -1,9 +1,11 @@
 import {
   exportJsonBackup,
   formatImportSummary,
+  formatMaxImportSize,
   importJsonBackup,
   type ImportMode,
 } from "../transfer/dataTransfer";
+import { assertImportByteSize } from "../transfer/importLimits";
 
 type DataTransferMenuOptions = {
   onImported: () => void;
@@ -95,7 +97,8 @@ function openImportDialog(onImported: () => void): void {
         <div class="editor-body">
           <p class="hint">
             Velg om importen skal slås sammen med det du har, eller erstatte eksisterende data.
-            Støtter JSON-backup fra HelseApp (Mac/web).
+            Støtter JSON-backup fra HelseApp (Mac/web). Maks filstørrelse:
+            ${formatMaxImportSize()}.
           </p>
 
           <fieldset class="form-field">
@@ -155,8 +158,16 @@ function openImportDialog(onImported: () => void): void {
     const file = fileInput?.files?.[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith(".json")) {
-      alert("Filformatet støttes ikke. Bruk JSON.");
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith(".json") || file.type.includes("html")) {
+      alert("Filformatet støttes ikke. Bruk en .json-backup.");
+      return;
+    }
+
+    try {
+      assertImportByteSize(file.size);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Filen er for stor.");
       return;
     }
 

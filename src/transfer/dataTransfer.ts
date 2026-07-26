@@ -33,6 +33,14 @@ import {
 } from "../types";
 import { parseDateKey, toDateKey } from "../utils/dates";
 import { stringifySorted } from "../utils/json";
+import {
+  IMPORT_LIMITS,
+  assertArrayLength,
+  assertImportByteSize,
+  truncateText,
+} from "./importLimits";
+
+export { IMPORT_LIMITS, formatMaxImportSize } from "./importLimits";
 
 export const EXPORT_FORMAT_VERSION = 2;
 
@@ -183,13 +191,15 @@ function parseDailyLogRecord(
   }
 
   const medications = asStringArray(record.medications)
+    .map((name) => truncateText(name.trim(), IMPORT_LIMITS.maxNameChars))
     .filter((name) => knownMedicationNames.has(name))
+    .slice(0, IMPORT_LIMITS.maxMedications)
     .sort((a, b) => a.localeCompare(b, "nb"));
 
   return {
     date,
     healthValue: Math.round(healthValue),
-    note: asString(record.note),
+    note: truncateText(asString(record.note), IMPORT_LIMITS.maxNoteChars),
     hadB12Injection: asBool(record.hadB12Injection),
     medications,
     tinglingHands: Math.max(decodedTingling, numbness),
@@ -228,9 +238,10 @@ function parseExtraSymptoms(raw: unknown): Record<string, number> {
   if (!record) return {};
   const result: Record<string, number> = {};
   for (const [key, value] of Object.entries(record)) {
-    if (typeof value === "number" && Number.isFinite(value)) {
-      result[key] = value;
-    }
+    if (Object.keys(result).length >= IMPORT_LIMITS.maxExtraSymptomKeys) break;
+    const safeKey = truncateText(key.trim(), IMPORT_LIMITS.maxNameChars);
+    if (!safeKey || typeof value !== "number" || !Number.isFinite(value)) continue;
+    result[safeKey] = value;
   }
   return result;
 }
@@ -322,6 +333,8 @@ export async function exportJsonBackup(): Promise<void> {
 }
 
 export async function importJsonBackup(text: string, mode: ImportMode): Promise<ImportResult> {
+  assertImportByteSize(new TextEncoder().encode(text).byteLength);
+
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -333,12 +346,33 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
   let legacyUTC = false;
 
   if (Array.isArray(parsed)) {
+    assertArrayLength(parsed, IMPORT_LIMITS.maxDailyLogs, "dailyLogs");
     exportPayload = { exportFormatVersion: 1, dailyLogs: parsed };
     legacyUTC = true;
   } else {
     const record = asRecord(parsed);
     if (!record) throw new Error("Filen inneholder ugyldige data.");
-    exportPayload = record as RawExport;
+    exportPayload = {
+      exportFormatVersion: asNumber(record.exportFormatVersion, 1),
+      dailyLogs: assertArrayLength(record.dailyLogs, IMPORT_LIMITS.maxDailyLogs, "dailyLogs"),
+      medications: assertArrayLength(
+        record.medications,
+        IMPORT_LIMITS.maxMedications,
+        "medications",
+      ),
+      trackers: assertArrayLength(record.trackers, IMPORT_LIMITS.maxTrackers, "trackers"),
+      trackerValues: assertArrayLength(
+        record.trackerValues,
+        IMPORT_LIMITS.maxTrackerValues,
+        "trackerValues",
+      ),
+      labResults: assertArrayLength(
+        record.labResults,
+        IMPORT_LIMITS.maxLabResults,
+        "labResults",
+      ),
+      settings: record.settings,
+    };
     const version = asNumber(exportPayload.exportFormatVersion, 1);
     legacyUTC = version < 2;
   }
@@ -354,7 +388,7 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
   for (const raw of exportPayload.medications ?? []) {
     const record = asRecord(raw);
     if (!record) continue;
-    const name = asString(record.name).trim();
+    const name = truncateText(asString(record.name).trim(), IMPORT_LIMITS.maxNameChars);
     if (!name) continue;
 
     const kindRaw = asString(record.kind, "Tilskudd") as MedicationKind;
@@ -387,12 +421,13 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
   for (const raw of exportPayload.trackers ?? []) {
     const record = asRecord(raw);
     if (!record) continue;
-    const name = asString(record.name).trim();
+    const name = truncateText(asString(record.name).trim(), IMPORT_LIMITS.maxNameChars);
     if (!name) continue;
 
     const typeRaw = asString(record.type, "Tall") as TrackerType;
     const type = TRACKER_TYPES.includes(typeRaw) ? typeRaw : "Tall";
-    const unit = type === "Tall" ? asString(record.unit) : "";
+    const unit =
+      type === "Tall" ? truncateText(asString(record.unit), IMPORT_LIMITS.maxUnitChars) : "";
     const emoji = Array.from(asString(record.emoji).trim()).slice(0, 2).join("");
     const isActive = asBool(record.isActive, true);
     const existing = trackersByName.get(name);
@@ -422,7 +457,10 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
     const record = asRecord(raw);
     if (!record) continue;
     const date = resolveDateKey(asString(record.date), legacyUTC);
-    const trackerName = asString(record.trackerName).trim();
+    const trackerName = truncateText(
+      asString(record.trackerName).trim(),
+      IMPORT_LIMITS.maxNameChars,
+    );
     const tracker = trackersByName.get(trackerName);
     if (!date || !tracker) continue;
 
@@ -454,8 +492,8 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
       date,
       testType,
       value: asNumber(record.value),
-      unit: asString(record.unit),
-      note: asString(record.note),
+      unit: truncateText(asString(record.unit), IMPORT_LIMITS.maxUnitChars),
+      note: truncateText(asString(record.note), IMPORT_LIMITS.maxNoteChars),
     };
 
     await saveLabResult(next);
