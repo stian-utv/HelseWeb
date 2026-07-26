@@ -1,5 +1,4 @@
 import { renderCalendarPage } from "./pages/calendar";
-import { renderInsightsPage } from "./pages/insights";
 import { renderLabsPage } from "./pages/labs";
 import { renderMedicationsPage } from "./pages/medications";
 import { renderSymptomsPage } from "./pages/symptoms";
@@ -13,7 +12,6 @@ export type AppSection =
   | "trackers"
   | "symptoms"
   | "labs"
-  | "insights"
   | "trends";
 
 const sections: Array<{
@@ -59,13 +57,6 @@ const sections: Array<{
     icon: vialIcon(),
   },
   {
-    id: "insights",
-    title: "Innsikt",
-    subtitle: "Mønstre og ukeoversikt",
-    tint: "indigo",
-    icon: sparklesIcon(),
-  },
-  {
     id: "trends",
     title: "Grafer",
     subtitle: "Sammenlign over tid",
@@ -85,14 +76,14 @@ export async function renderApp(root: HTMLElement): Promise<void> {
             <div>
               <h1>HelseApp</h1>
               <p class="sidebar-tagline">Loggfør helsen din dag for dag.</p>
-              <p class="app-disclaimer">
-                Hobbyprosjekt for egen testing — ikke medisinsk råd. Bruk på eget ansvar.
-                Data lagres lokalt i nettleseren (ikke kryptert). Delt profil eller nettleser-synk
-                kan gjøre data synlige på andre enheter eller for andre brukere.
-              </p>
             </div>
             ${dataMenuMarkup()}
           </div>
+          <p class="app-disclaimer">
+            Et hobbyprosjekt til egen testing — ikke medisinsk råd, og bruk skjer på eget ansvar.
+            Det du logger blir liggende i nettleseren på denne enheten. Hvis flere bruker samme
+            nettleser, eller den synker mellom telefon og PC, kan andre også se loggen din.
+          </p>
         </div>
         <div class="sidebar-menu">
           <p class="sidebar-menu-label">Meny</p>
@@ -126,18 +117,9 @@ export async function renderApp(root: HTMLElement): Promise<void> {
   root.querySelectorAll<HTMLButtonElement>("[data-section]").forEach((button) => {
     button.addEventListener("click", () => {
       const section = button.dataset.section as AppSection | undefined;
-      if (!section || section === currentSection) {
-        if (
-          section === "calendar" ||
-          section === "medication" ||
-          section === "trackers" ||
-          section === "symptoms" ||
-          section === "labs" ||
-          section === "insights" ||
-          section === "trends"
-        ) {
-          void showSection(root, section);
-        }
+      if (!section) return;
+      if (section === currentSection) {
+        void showSection(root, section);
         return;
       }
       currentSection = section;
@@ -186,11 +168,6 @@ async function showSection(root: HTMLElement, section: AppSection): Promise<void
     return;
   }
 
-  if (section === "insights") {
-    await renderInsightsPage(content);
-    return;
-  }
-
   if (section === "trends") {
     await renderTrendsPage(content);
     return;
@@ -215,10 +192,6 @@ function heartIcon(): string {
 
 function vialIcon(): string {
   return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M8 2h4v2.2l3.2 5.2c.5.8.8 1.7.8 2.7A5 5 0 0 1 11 17H9a5 5 0 0 1-5-4.9c0-1 .3-1.9.8-2.7L8 4.2V2zm1.5 1.5v1.1l-.3.4-3 4.9c-.3.5-.5 1-.5 1.6A3.5 3.5 0 0 0 9 15.5h2a3.5 3.5 0 0 0 3.3-3.5c0-.6-.2-1.1-.5-1.6l-3-4.9-.3-.4V3.5h-1z"/></svg>`;
-}
-
-function sparklesIcon(): string {
-  return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M9.5 2.5 10.8 7l4.7 1.3-4.7 1.3L9.5 14l-1.3-4.4L3.5 8.3 8.2 7l1.3-4.5zm5.2 8.2.8 2.5 2.5.8-2.5.8-.8 2.5-.8-2.5-2.5-.8 2.5-.8.8-2.5z"/></svg>`;
 }
 
 function trendsIcon(): string {

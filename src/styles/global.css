@@ -61,7 +61,7 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -93,22 +93,34 @@ button {
 }
 
 .sidebar-header .sidebar-tagline {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .app-disclaimer {
-  margin: 0;
-  max-width: 16.5rem;
-  padding: 8px 10px;
+  margin: 12px 0 0;
+  max-width: none;
+  padding: 9px 12px;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--orange) 28%, transparent);
-  background: color-mix(in srgb, var(--orange) 8%, white);
-  color: color-mix(in srgb, var(--text) 88%, var(--orange));
-  font-size: 0.72rem;
-  line-height: 1.35;
+  border: 1px solid color-mix(in srgb, var(--orange) 24%, transparent);
+  background: color-mix(in srgb, var(--orange) 7%, white);
+  color: color-mix(in srgb, var(--text) 86%, var(--orange));
+  font-size: 0.74rem;
+  line-height: 1.4;
   font-weight: 500;
+}
+
+@media (min-width: 981px) {
+  .sidebar-header {
+    padding-right: 16px;
+  }
+
+  .app-disclaimer {
+    padding: 8px 14px;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
 }
 
 .data-menu-wrap {
@@ -825,7 +837,7 @@ button {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   padding: 0 10px;
 }
 
@@ -835,19 +847,21 @@ button {
   gap: 14px;
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--row-tint, var(--accent)) 14%, transparent);
   border-radius: 12px;
-  background: transparent;
+  background: color-mix(in srgb, var(--row-tint, var(--accent)) 5%, white);
   color: inherit;
   text-align: left;
   transition:
     background 0.14s ease,
     border-color 0.14s ease,
+    box-shadow 0.14s ease,
     transform 0.14s ease;
 }
 
 .sidebar-row:hover:not(.is-selected) {
-  background: rgba(0, 0, 0, 0.04);
+  background: color-mix(in srgb, var(--row-tint, var(--accent)) 10%, white);
+  border-color: color-mix(in srgb, var(--row-tint, var(--accent)) 22%, transparent);
 }
 
 .sidebar-row:active {

@@ -65,7 +65,7 @@ export async function renderLabsPage(root: HTMLElement): Promise<void> {
       <header class="overview-header">
         <div>
           <h1>Blodprøver</h1>
-          <p>Registrer B12, folat, MMA og homocystein. Vises også under Innsikt.</p>
+          <p>Registrer B12, folat, MMA og homocystein.</p>
         </div>
         <button type="button" class="button button-primary" data-action="add">Legg til blodprøve</button>
       </header>
