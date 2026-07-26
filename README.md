@@ -96,7 +96,3 @@ Hvis du er usikker på symptomer, prøvesvar eller behandling: kontakt lege elle
 ## Lisens / bruk
 
 Koden i dette repoet kan brukes og deles fritt til personlige formål med mindre annet er oppgitt senere. Appen leveres uten support-forpliktelse.
-
-## Utvikling
-
-Se `docs/MAC_APP_REFERENCE.md` for datamodell og feature-paritet med Mac-appen.
