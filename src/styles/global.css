@@ -1544,10 +1544,17 @@ button {
 
 .welcome-modal {
   width: min(520px, 100%);
+  max-height: min(860px, calc(100dvh - 32px));
+  overflow: hidden;
 }
 
 .welcome-modal-body {
   padding: 22px 22px 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;
+  flex: 1;
 }
 
 .welcome-modal-body h2 {
@@ -1590,11 +1597,26 @@ button {
 .welcome-actions {
   display: flex;
   justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  margin: 0 -22px -20px;
+  padding: 14px 22px 20px;
+  background: linear-gradient(180deg, transparent, var(--card-bg) 28%);
 }
 
 .welcome-modal-overlay {
   /* Første besøk: ikke lukk ved klikk utenfor — brukeren skal bekrefte */
   cursor: default;
+  align-items: start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+}
+
+.welcome-modal-overlay .welcome-modal {
+  margin: auto;
+  height: auto;
+  max-height: min(860px, calc(100dvh - 24px));
 }
 
 .b12-day-toggle {
