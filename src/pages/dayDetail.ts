@@ -477,7 +477,7 @@ export async function openDayDetail(options: DayDetailOptions): Promise<void> {
 
           <section class="detail-card note-card">
             <h3>Notat</h3>
-            <textarea name="note" rows="4" placeholder="Frivillig notat for dagen…">${escapeHtml(log.note)}</textarea>
+            <textarea name="note" rows="4" maxlength="1000" placeholder="Frivillig notat for dagen…">${escapeHtml(log.note)}</textarea>
           </section>
 
           ${
