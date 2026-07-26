@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="HelseApp">
+  <rect width="128" height="128" rx="28" fill="#2f8f5b"/>
+  <path d="M64 24c-8 18-28 22-28 42 0 15 12 28 28 28s28-13 28-28c0-20-20-24-28-42z" fill="#ffffff" opacity="0.95"/>
+  <path d="M64 78v18M55 87h18" stroke="#2f8f5b" stroke-width="6" stroke-linecap="round"/>
+</svg>

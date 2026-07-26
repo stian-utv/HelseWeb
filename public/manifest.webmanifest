@@ -1,0 +1,19 @@
+{
+  "name": "HelseApp Web",
+  "short_name": "HelseApp",
+  "description": "Daglig helse-logging – data lagres lokalt i nettleseren.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ececec",
+  "theme_color": "#007aff",
+  "lang": "nb",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
