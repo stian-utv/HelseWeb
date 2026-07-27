@@ -1429,6 +1429,12 @@ button {
   color: white;
 }
 
+.button:disabled,
+.button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .button-ghost {
   background: rgba(0, 0, 0, 0.05);
   color: var(--text);
@@ -1610,12 +1616,29 @@ button {
 
 .welcome-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   position: sticky;
   bottom: 0;
   margin: 0 -22px -20px;
   padding: 14px 22px 20px;
   background: linear-gradient(180deg, transparent, var(--card-bg) 28%);
+}
+
+.welcome-scroll-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.welcome-scroll-hint[hidden] {
+  display: none;
+}
+
+.welcome-actions .button {
+  width: 100%;
 }
 
 .welcome-modal-overlay {

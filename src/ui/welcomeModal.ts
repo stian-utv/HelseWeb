@@ -70,7 +70,15 @@ export function openWelcomeModal(options: { force?: boolean } = {}): void {
         </p>
 
         <div class="welcome-actions">
-          <button type="button" class="button button-primary" data-action="welcome-accept">
+          <p class="welcome-scroll-hint" data-welcome-scroll-hint>
+            Scroll ned for å lese ferdig
+          </p>
+          <button
+            type="button"
+            class="button button-primary"
+            data-action="welcome-accept"
+            disabled
+          >
             Jeg forstår — kom i gang
           </button>
         </div>
@@ -83,7 +91,33 @@ export function openWelcomeModal(options: { force?: boolean } = {}): void {
     overlay.remove();
   };
 
-  overlay.querySelector('[data-action="welcome-accept"]')?.addEventListener("click", close);
+  const body = overlay.querySelector(".welcome-modal-body");
+  const acceptBtn = overlay.querySelector<HTMLButtonElement>(
+    '[data-action="welcome-accept"]',
+  );
+  const scrollHint = overlay.querySelector<HTMLElement>("[data-welcome-scroll-hint]");
+
+  const updateAcceptReady = () => {
+    if (!(body instanceof HTMLElement) || !acceptBtn) return;
+    const remaining = body.scrollHeight - body.clientHeight - body.scrollTop;
+    const needsScroll = body.scrollHeight > body.clientHeight + 4;
+    const ready = !needsScroll || remaining <= 12;
+    acceptBtn.disabled = !ready;
+    if (scrollHint) {
+      scrollHint.hidden = ready;
+    }
+  };
+
+  if (body instanceof HTMLElement) {
+    body.addEventListener("scroll", updateAcceptReady, { passive: true });
+  }
+  acceptBtn?.addEventListener("click", () => {
+    if (acceptBtn.disabled) return;
+    close();
+  });
 
   document.body.appendChild(overlay);
+  requestAnimationFrame(updateAcceptReady);
+  // Fonts / layout kan endre høyde etter første paint
+  window.setTimeout(updateAcceptReady, 100);
 }
