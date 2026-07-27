@@ -50,11 +50,12 @@ function formatMonthTitle(yearMonth: string): string {
   }).format(new Date(year!, month! - 1, 1));
 }
 
-function formatShortDate(dateKey: string): string {
+function formatShortDate(dateKey: string, withYear = false): string {
   const [year, month, day] = dateKey.split("-").map(Number);
   return new Intl.DateTimeFormat("nb-NO", {
     day: "numeric",
     month: "short",
+    ...(withYear ? { year: "numeric" as const } : {}),
   }).format(new Date(year!, month! - 1, day));
 }
 
@@ -168,8 +169,9 @@ function renderCyclesView(
     cycles.push({ start, end: addDays(endExclusive, -1) });
   }
 
-  // Vis nyeste først
-  const ordered = cycles.slice().reverse().slice(0, 16);
+  // Nyeste først — alle sykluser i valgt periode
+  const ordered = cycles.slice().reverse();
+  const spanYears = ordered.some((cycle) => cycle.start.slice(0, 4) !== periodEnd.slice(0, 4));
 
   return `
     <div class="resp-cycles">
@@ -185,7 +187,7 @@ function renderCyclesView(
           return `
             <article class="resp-cycle">
               <div class="resp-cycle-meta">
-                <strong>${escapeHtml(formatShortDate(cycle.start))}</strong>
+                <strong>${escapeHtml(formatShortDate(cycle.start, spanYears))}</strong>
                 <span>${length} dager${avg != null ? ` · snitt ${avg.toFixed(1).replace(".", ",")}` : ""}</span>
               </div>
               <div class="resp-cycle-strip">
