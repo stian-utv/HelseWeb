@@ -1,11 +1,14 @@
 import { normalizeEnabledSymptoms } from "../symptoms/catalog";
 import {
+  DEFAULT_LAB_ANALYSES,
   DEFAULT_SETTINGS,
+  createId,
   labResultId,
   normalizeDailyLog,
   trackerValueId,
   type AppSettings,
   type DailyLog,
+  type LabAnalysis,
   type LabResult,
   type Medication,
   type Tracker,
@@ -13,7 +16,7 @@ import {
 } from "../types";
 
 const DB_NAME = "helseapp-web";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 type StoreName =
   | "dailyLogs"
@@ -21,7 +24,8 @@ type StoreName =
   | "medications"
   | "trackers"
   | "trackerValues"
-  | "labResults";
+  | "labResults"
+  | "labAnalyses";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -54,6 +58,10 @@ function openDatabase(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains("labResults")) {
         db.createObjectStore("labResults", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("labAnalyses")) {
+        db.createObjectStore("labAnalyses", { keyPath: "id" });
       }
     };
 
@@ -304,6 +312,80 @@ export async function replaceTrackerValuesForDate(
   });
 }
 
+// ——— Lab analyses ———
+
+async function listLabAnalysesRaw(): Promise<LabAnalysis[]> {
+  const items = await withStore<LabAnalysis[]>("labAnalyses", "readonly", (store) => store.getAll());
+  return (items ?? []).sort((a, b) => a.name.localeCompare(b.name, "nb"));
+}
+
+/** Lister lagrede analyser uten å fylle inn standardkatalog. */
+export async function listStoredLabAnalyses(): Promise<LabAnalysis[]> {
+  return listLabAnalysesRaw();
+}
+
+export async function listLabAnalyses(): Promise<LabAnalysis[]> {
+  const existing = await listLabAnalysesRaw();
+  if (existing.length > 0) return existing;
+
+  const seeded: LabAnalysis[] = DEFAULT_LAB_ANALYSES.map((item) => ({
+    id: createId(),
+    name: item.name,
+    unit: item.unit,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  }));
+
+  await withStore("labAnalyses", "readwrite", (store) => {
+    for (const analysis of seeded) store.put(analysis);
+  });
+
+  return seeded.sort((a, b) => a.name.localeCompare(b.name, "nb"));
+}
+
+export async function listActiveLabAnalyses(): Promise<LabAnalysis[]> {
+  return (await listLabAnalyses()).filter((item) => item.isActive);
+}
+
+export async function saveLabAnalysis(analysis: LabAnalysis): Promise<void> {
+  await withStore("labAnalyses", "readwrite", (store) => store.put(analysis));
+}
+
+export async function deleteLabAnalysis(id: string): Promise<void> {
+  await withStore("labAnalyses", "readwrite", (store) => store.delete(id));
+}
+
+export async function renameLabResults(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return;
+
+  const results = await listLabResults();
+  await withStore("labResults", "readwrite", (store) => {
+    for (const result of results) {
+      if (result.testType !== oldName) continue;
+      store.delete(result.id);
+      store.put({
+        ...result,
+        id: labResultId(result.date, newName),
+        testType: newName,
+      } satisfies LabResult);
+    }
+  });
+}
+
+export async function ensureLabAnalysisForName(name: string, unit = ""): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const analyses = await listLabAnalysesRaw();
+  if (analyses.some((item) => item.name === trimmed)) return;
+  await saveLabAnalysis({
+    id: createId(),
+    name: trimmed,
+    unit,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  });
+}
+
 // ——— Lab results ———
 
 export async function listLabResults(): Promise<LabResult[]> {
@@ -329,10 +411,19 @@ export async function deleteLabResult(id: string): Promise<void> {
 
 export async function clearAllAppData(): Promise<void> {
   await withStores(
-    ["labResults", "trackerValues", "dailyLogs", "trackers", "medications", "settings"],
+    [
+      "labResults",
+      "labAnalyses",
+      "trackerValues",
+      "dailyLogs",
+      "trackers",
+      "medications",
+      "settings",
+    ],
     "readwrite",
     (stores) => {
       stores.labResults.clear();
+      stores.labAnalyses.clear();
       stores.trackerValues.clear();
       stores.dailyLogs.clear();
       stores.trackers.clear();

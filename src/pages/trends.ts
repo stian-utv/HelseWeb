@@ -80,6 +80,28 @@ function applyQuickPreset(ids: readonly string[], available: Set<string>): void 
   if (state.selected.size === 0) state.selected.add("healthScore");
 }
 
+function catmullRomPath(points: Array<{ x: number; y: number }>): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
+  if (points.length === 2) {
+    return `M ${points[0]!.x} ${points[0]!.y} L ${points[1]!.x} ${points[1]!.y}`;
+  }
+
+  let d = `M ${points[0]!.x} ${points[0]!.y}`;
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const p0 = points[i === 0 ? 0 : i - 1]!;
+    const p1 = points[i]!;
+    const p2 = points[i + 1]!;
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1]!;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
 function renderChart(
   series: Array<{ metric: ChartMetric; points: ChartPoint[] }>,
   period: DatePeriod,
@@ -135,9 +157,11 @@ function renderChart(
           .join("");
       }
 
-      const d = points
-        .map((point, index) => `${index === 0 ? "M" : "L"} ${xFor(point.date)} ${yFor(point.normalized)}`)
-        .join(" ");
+      const coords = points.map((point) => ({
+        x: xFor(point.date),
+        y: yFor(point.normalized),
+      }));
+      const d = catmullRomPath(coords);
       const dots = points
         .map(
           (point) =>
@@ -171,7 +195,10 @@ function metricChip(metric: ChartMetric): string {
   `;
 }
 
-export async function renderTrendsPage(root: HTMLElement): Promise<void> {
+export async function renderTrendsPage(
+  root: HTMLElement,
+  options: { embedded?: boolean } = {},
+): Promise<void> {
   const [logs, medications, trackers, trackerValues, storedSettings] = await Promise.all([
     listDailyLogs(),
     listActiveMedications(),
@@ -227,11 +254,17 @@ export async function renderTrendsPage(root: HTMLElement): Promise<void> {
   ] as string[];
 
   root.innerHTML = `
-    <div class="trends-page">
-      <header class="page-title-block">
-        <h1>Grafer</h1>
-        <p>Sammenlign symptomer og medisin over tid.</p>
-      </header>
+    <div class="trends-page ${options.embedded ? "is-embedded" : ""}">
+      ${
+        options.embedded
+          ? ""
+          : `
+        <header class="page-title-block">
+          <h1>Grafer</h1>
+          <p>Sammenlign symptomer og medisin over tid.</p>
+        </header>
+      `
+      }
 
       <section class="insight-section">
         <h2>Tidsrom</h2>
@@ -336,10 +369,18 @@ export async function renderTrendsPage(root: HTMLElement): Promise<void> {
     </div>
   `;
 
-  bindTrends(root, metrics);
+  bindTrends(root, metrics, options);
 }
 
-function bindTrends(root: HTMLElement, metrics: ChartMetric[]): void {
+function bindTrends(
+  root: HTMLElement,
+  metrics: ChartMetric[],
+  options: { embedded?: boolean },
+): void {
+  const rerender = () => {
+    void renderTrendsPage(root, options);
+  };
+
   root.querySelectorAll<HTMLButtonElement>("[data-preset]").forEach((button) => {
     button.addEventListener("click", () => {
       const preset = button.dataset.preset as PeriodPreset;
@@ -351,24 +392,24 @@ function bindTrends(root: HTMLElement, metrics: ChartMetric[]): void {
             state.preset = "custom";
             state.customStart = start;
             state.customEnd = end;
-            void renderTrendsPage(root);
+            rerender();
           },
         });
         return;
       }
       state.preset = preset;
-      void renderTrendsPage(root);
+      rerender();
     });
   });
 
   root.querySelector('[data-action="toggle-picker"]')?.addEventListener("click", () => {
     state.pickerExpanded = !state.pickerExpanded;
-    void renderTrendsPage(root);
+    rerender();
   });
 
   root.querySelector('[data-action="collapse-picker"]')?.addEventListener("click", () => {
     state.pickerExpanded = false;
-    void renderTrendsPage(root);
+    rerender();
   });
 
   const available = new Set(metrics.map((metric) => metric.id));
@@ -376,7 +417,7 @@ function bindTrends(root: HTMLElement, metrics: ChartMetric[]): void {
     button.addEventListener("click", () => {
       const key = button.dataset.quick as keyof typeof QUICK_PRESETS;
       applyQuickPreset(QUICK_PRESETS[key], available);
-      void renderTrendsPage(root);
+      rerender();
     });
   });
 
@@ -385,7 +426,7 @@ function bindTrends(root: HTMLElement, metrics: ChartMetric[]): void {
       const metric = metrics.find((item) => item.id === button.dataset.metric);
       if (!metric) return;
       toggleMetric(metric, metrics);
-      void renderTrendsPage(root);
+      rerender();
     });
   });
 }

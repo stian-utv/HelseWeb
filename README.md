@@ -14,7 +14,7 @@ Appen er **statisk** (ingen backend) og lagres som vanlige filer. Den kan hostes
 - **Ingen konto** i appen, og appen selv har **ingen sky-synk**.
 - Data sendes **ikke** til noen server fra appen selv.
 - **Obs:** Nettleserens egen synk (f.eks. innlogget Chrome/Safari/Firefox mellom telefon og PC) eller en **delt brukerprofil** kan likevel kopiere eller vise lokal lagring. Bruk egen profil, og vær bevisst på nettleser-synk hvis dataene er sensitive.
-- Du kan **eksportere/importere JSON** (v3; eldre web-backups v1/v2 støttes ved import) via Data-menyen — dette er også måten du tar sikkerhetskopi på.
+- Du kan **eksportere/importere JSON** (v4; eldre web-backups v1–v3 støttes ved import) via Data-menyen — dette er også måten du tar sikkerhetskopi på.
 - Sletter du nettleserdata, bruker privat modus, eller bytter enhet/nettleser, kan loggen forsvinne hvis du ikke har eksportert.
 
 ## Kom i gang lokalt

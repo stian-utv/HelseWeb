@@ -1,18 +1,18 @@
 import { renderCalendarPage } from "./pages/calendar";
 import { renderLabsPage } from "./pages/labs";
 import { renderMedicationsPage } from "./pages/medications";
+import { renderOverviewPage } from "./pages/overview";
 import { renderSymptomsPage } from "./pages/symptoms";
 import { renderTrackersPage } from "./pages/trackers";
-import { renderTrendsPage } from "./pages/trends";
 import { bindDataTransferMenu, dataMenuMarkup } from "./ui/dataTransferMenu";
 
 export type AppSection =
   | "calendar"
+  | "overview"
   | "medication"
   | "trackers"
   | "symptoms"
-  | "labs"
-  | "trends";
+  | "labs";
 
 const sections: Array<{
   id: AppSection;
@@ -27,6 +27,13 @@ const sections: Array<{
     subtitle: "Daglig registrering",
     tint: "blue",
     icon: calendarIcon(),
+  },
+  {
+    id: "overview",
+    title: "Oversikt",
+    subtitle: "Tidslinje, utvikling og grafer",
+    tint: "indigo",
+    icon: timelineIcon(),
   },
   {
     id: "medication",
@@ -52,16 +59,9 @@ const sections: Array<{
   {
     id: "labs",
     title: "Blodprøver",
-    subtitle: "B12, folat m.m.",
+    subtitle: "Analyser og prøvesvar",
     tint: "purple",
     icon: vialIcon(),
-  },
-  {
-    id: "trends",
-    title: "Grafer",
-    subtitle: "Sammenlign over tid",
-    tint: "teal",
-    icon: trendsIcon(),
   },
 ];
 
@@ -148,6 +148,11 @@ async function showSection(root: HTMLElement, section: AppSection): Promise<void
     return;
   }
 
+  if (section === "overview") {
+    await renderOverviewPage(content);
+    return;
+  }
+
   if (section === "medication") {
     await renderMedicationsPage(content);
     return;
@@ -165,17 +170,15 @@ async function showSection(root: HTMLElement, section: AppSection): Promise<void
 
   if (section === "labs") {
     await renderLabsPage(content);
-    return;
-  }
-
-  if (section === "trends") {
-    await renderTrendsPage(content);
-    return;
   }
 }
 
 function calendarIcon(): string {
   return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M6 2v2H4.5A1.5 1.5 0 0 0 3 5.5v11A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 15.5 4H14V2h-1.5v2h-5V2H6zm9.5 6h-11v7.5h11V8z"/></svg>`;
+}
+
+function timelineIcon(): string {
+  return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M4 3h2v14H4V3zm5 2h7v2H9V5zm0 4h7v2H9V9zm0 4h7v2H9v-2z"/></svg>`;
 }
 
 function pillsIcon(): string {
@@ -192,8 +195,4 @@ function heartIcon(): string {
 
 function vialIcon(): string {
   return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M8 2h4v2.2l3.2 5.2c.5.8.8 1.7.8 2.7A5 5 0 0 1 11 17H9a5 5 0 0 1-5-4.9c0-1 .3-1.9.8-2.7L8 4.2V2zm1.5 1.5v1.1l-.3.4-3 4.9c-.3.5-.5 1-.5 1.6A3.5 3.5 0 0 0 9 15.5h2a3.5 3.5 0 0 0 3.3-3.5c0-.6-.2-1.1-.5-1.6l-3-4.9-.3-.4V3.5h-1z"/></svg>`;
-}
-
-function trendsIcon(): string {
-  return `<svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M3 15.5 8.2 9l3.2 3.2L17 5.8V8h1.5V3.5H14V5h2.1l-4.7 5.8-3.2-3.2L3 14.2V15.5z"/></svg>`;
 }

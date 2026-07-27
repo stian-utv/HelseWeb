@@ -2,8 +2,6 @@ export type MedicationKind = "Tilskudd" | "Medisin";
 
 export type TrackerType = "Tall" | "Ja/nei" | "Skala";
 
-export type LabTestType = "B12" | "Folat" | "MMA" | "Homocystein";
-
 export type Medication = {
   id: string;
   name: string;
@@ -30,11 +28,20 @@ export type TrackerValue = {
   value: number;
 };
 
-/** Composite key: `${date}|${testType}` */
+/** Brukerdefinerte blodprøveanalyser (B12, ferritin, …). */
+export type LabAnalysis = {
+  id: string;
+  name: string;
+  unit: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
+/** Composite key: `${date}|${testType}` der testType = LabAnalysis.name */
 export type LabResult = {
   id: string;
   date: string;
-  testType: LabTestType;
+  testType: string;
   value: number;
   unit: string;
   note: string;
@@ -110,23 +117,23 @@ export function trackerValueId(date: string, trackerName: string): string {
   return `${date}|${trackerName}`;
 }
 
-export function labResultId(date: string, testType: LabTestType): string {
+export function labResultId(date: string, testType: string): string {
   return `${date}|${testType}`;
 }
 
-export const LAB_TEST_TYPES: LabTestType[] = ["B12", "Folat", "MMA", "Homocystein"];
+/** Standardanalyser ved første bruk / tom katalog. */
+export const DEFAULT_LAB_ANALYSES: Array<{ name: string; unit: string }> = [
+  { name: "B12", unit: "pmol/L" },
+  { name: "Folat", unit: "nmol/L" },
+  { name: "MMA", unit: "nmol/L" },
+  { name: "Homocystein", unit: "µmol/L" },
+];
 
-export function labTestDefaultUnit(testType: LabTestType): string {
-  switch (testType) {
-    case "B12":
-      return "pmol/L";
-    case "Folat":
-      return "nmol/L";
-    case "MMA":
-      return "nmol/L";
-    case "Homocystein":
-      return "µmol/L";
-  }
+export function defaultUnitForLabName(name: string): string {
+  const match = DEFAULT_LAB_ANALYSES.find(
+    (item) => item.name.toLocaleLowerCase("nb") === name.trim().toLocaleLowerCase("nb"),
+  );
+  return match?.unit ?? "";
 }
 
 export function createEmptyDailyLog(date: string, healthValue = 5): DailyLog {

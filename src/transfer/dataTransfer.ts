@@ -1,12 +1,16 @@
 import {
   clearAllAppData,
+  ensureLabAnalysisForName,
   listDailyLogs,
+  listLabAnalyses,
   listLabResults,
   listMedications,
+  listStoredLabAnalyses,
   listTrackers,
   listTrackerValues,
   loadSettings,
   saveDailyLog,
+  saveLabAnalysis,
   saveLabResult,
   saveMedication,
   saveSettings,
@@ -18,14 +22,14 @@ import {
   clampTrackerValue,
   createId,
   DEFAULT_SETTINGS,
-  LAB_TEST_TYPES,
+  defaultUnitForLabName,
   MEDICATION_KINDS,
   normalizeDailyLog,
   TRACKER_TYPES,
   type AppSettings,
   type DailyLog,
+  type LabAnalysis,
   type LabResult,
-  type LabTestType,
   type Medication,
   type MedicationKind,
   type Tracker,
@@ -42,8 +46,8 @@ import {
 
 export { IMPORT_LIMITS, formatMaxImportSize } from "./importLimits";
 
-/** v3 = web-only feltnavn. Import støtter fortsatt v1/v2 (inkl. eldre feltnavn). */
-export const EXPORT_FORMAT_VERSION = 3;
+/** v4 = egendefinerte lab-analyser. Import støtter v1–v3. */
+export const EXPORT_FORMAT_VERSION = 4;
 
 export type ImportMode = "merge" | "replace";
 
@@ -53,6 +57,7 @@ export type ImportResult = {
   trackers: number;
   trackerValues: number;
   labResults: number;
+  labAnalyses: number;
 };
 
 type RawExport = {
@@ -62,6 +67,7 @@ type RawExport = {
   trackers?: unknown[];
   trackerValues?: unknown[];
   labResults?: unknown[];
+  labAnalyses?: unknown[];
   settings?: unknown;
 };
 
@@ -258,14 +264,16 @@ function parseSettings(raw: unknown): AppSettings | null {
 }
 
 export async function exportJsonBackup(): Promise<void> {
-  const [dailyLogs, medications, trackers, trackerValues, labResults, settings] = await Promise.all([
-    listDailyLogs(),
-    listMedications(),
-    listTrackers(),
-    listTrackerValues(),
-    listLabResults(),
-    loadSettings(),
-  ]);
+  const [dailyLogs, medications, trackers, trackerValues, labResults, labAnalyses, settings] =
+    await Promise.all([
+      listDailyLogs(),
+      listMedications(),
+      listTrackers(),
+      listTrackerValues(),
+      listLabResults(),
+      listLabAnalyses(),
+      loadSettings(),
+    ]);
 
   const payload = {
     exportFormatVersion: EXPORT_FORMAT_VERSION,
@@ -301,6 +309,14 @@ export async function exportJsonBackup(): Promise<void> {
         date: value.date,
         trackerName: value.trackerName,
         value: value.value,
+      })),
+    labAnalyses: labAnalyses
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, "nb"))
+      .map((analysis) => ({
+        name: analysis.name,
+        unit: analysis.unit,
+        isActive: analysis.isActive,
       })),
     labResults: labResults
       .slice()
@@ -354,6 +370,11 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
         record.trackerValues,
         IMPORT_LIMITS.maxTrackerValues,
         "trackerValues",
+      ),
+      labAnalyses: assertArrayLength(
+        record.labAnalyses,
+        IMPORT_LIMITS.maxLabAnalyses,
+        "labAnalyses",
       ),
       labResults: assertArrayLength(
         record.labResults,
@@ -466,14 +487,53 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
   const existingLabs = await listLabResults();
   const labsByKey = new Map(existingLabs.map((lab) => [`${lab.date}|${lab.testType}`, lab]));
 
+  const existingAnalyses = await listStoredLabAnalyses();
+  const analysesByName = new Map(existingAnalyses.map((item) => [item.name, item]));
+  let newAnalyses = 0;
+
+  for (const raw of exportPayload.labAnalyses ?? []) {
+    const record = asRecord(raw);
+    if (!record) continue;
+    const name = truncateText(asString(record.name).trim(), IMPORT_LIMITS.maxNameChars);
+    if (!name) continue;
+    const unit = truncateText(asString(record.unit), IMPORT_LIMITS.maxUnitChars);
+    const isActive = asBool(record.isActive, true);
+    const existing = analysesByName.get(name);
+
+    if (existing) {
+      const updated: LabAnalysis = { ...existing, unit, isActive };
+      await saveLabAnalysis(updated);
+      analysesByName.set(name, updated);
+    } else {
+      const created: LabAnalysis = {
+        id: createId(),
+        name,
+        unit,
+        isActive,
+        createdAt: new Date().toISOString(),
+      };
+      await saveLabAnalysis(created);
+      analysesByName.set(name, created);
+      newAnalyses += 1;
+    }
+  }
+
   for (const raw of exportPayload.labResults ?? []) {
     const record = asRecord(raw);
     if (!record) continue;
     const date = resolveDateKey(asString(record.date), legacyUTC);
     if (!date) continue;
 
-    const testTypeRaw = asString(record.testType, "B12") as LabTestType;
-    const testType = LAB_TEST_TYPES.includes(testTypeRaw) ? testTypeRaw : "B12";
+    const testType = truncateText(asString(record.testType, "B12").trim(), IMPORT_LIMITS.maxNameChars);
+    if (!testType) continue;
+
+    const unit = truncateText(
+      asString(record.unit) || defaultUnitForLabName(testType),
+      IMPORT_LIMITS.maxUnitChars,
+    );
+
+    await ensureLabAnalysisForName(testType, unit);
+
     const key = `${date}|${testType}`;
     const existing = labsByKey.get(key);
     const next: LabResult = {
@@ -481,7 +541,7 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
       date,
       testType,
       value: asNumber(record.value),
-      unit: truncateText(asString(record.unit), IMPORT_LIMITS.maxUnitChars),
+      unit,
       note: truncateText(asString(record.note), IMPORT_LIMITS.maxNoteChars),
     };
 
@@ -511,9 +571,10 @@ export async function importJsonBackup(text: string, mode: ImportMode): Promise<
     trackers: newTrackers,
     trackerValues: trackerValueCount,
     labResults: newLabs,
+    labAnalyses: newAnalyses,
   };
 }
 
 export function formatImportSummary(result: ImportResult): string {
-  return `Importerte ${result.dailyLogs} dagslogger, ${result.medications} medisiner, ${result.trackers} trackere, ${result.trackerValues} tracker-verdier og ${result.labResults} blodprøver.`;
+  return `Importerte ${result.dailyLogs} dagslogger, ${result.medications} medisiner, ${result.trackers} trackere, ${result.trackerValues} tracker-verdier, ${result.labAnalyses} analyser og ${result.labResults} blodprøver.`;
 }

@@ -10,6 +10,7 @@ export const IMPORT_LIMITS = {
   /** Ca. 1 år × 15 trackere. */
   maxTrackerValues: 5_500,
   maxLabResults: 150,
+  maxLabAnalyses: 40,
   maxNoteChars: 1_000,
   maxNameChars: 80,
   maxUnitChars: 40,
