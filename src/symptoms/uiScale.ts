@@ -1,4 +1,4 @@
-/** Symptom-skala i UI: 0–5. Lagring forblir 0–10 (Mac JSON-paritet). */
+/** Symptom-skala i UI: 0–5. Lagring er 0–10 for finere oppløsning i grafer/eksport. */
 
 export const SYMPTOM_UI_MAX = 5;
 export const SYMPTOM_STORAGE_MAX = 10;

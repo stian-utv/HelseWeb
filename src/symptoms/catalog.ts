@@ -1,4 +1,4 @@
-import { handParesthesia, type DailyLog } from "../types";
+import type { DailyLog } from "../types";
 
 export type SymptomCategory = "energi" | "nevrologisk" | "psykisk" | "mage" | "annet";
 
@@ -7,8 +7,8 @@ export type SymptomKind = "scale10" | "gi3" | "sleepHours" | "bool";
 export type SymptomStorage =
   | "handParesthesia"
   | "brainFog"
-  | "mood"
-  | "burningPain"
+  | "irritability"
+  | "anxiety"
   | "headache"
   | "hadMigraine"
   | "balanceIssues"
@@ -43,7 +43,7 @@ export const SYMPTOM_CATEGORIES: Array<{ id: SymptomCategory; title: string }> =
 
 /**
  * Symptomer knyttet til B12-mangel.
- * `storage: "extra"` lagres i DailyLog.extraSymptoms (web), Mac ignorerer ukjente felt.
+ * `storage: "extra"` lagres i DailyLog.extraSymptoms.
  */
 export const SYMPTOM_CATALOG: SymptomDef[] = [
   {
@@ -132,7 +132,7 @@ export const SYMPTOM_CATALOG: SymptomDef[] = [
     label: "Konsentrasjonsvansker",
     category: "nevrologisk",
     kind: "scale10",
-    description: "Vansker med fokus fokus og fokus",
+    description: "Vansker med å holde fokus og fokus",
     storage: "extra",
     color: "#66d4e8",
   },
@@ -187,7 +187,7 @@ export const SYMPTOM_CATALOG: SymptomDef[] = [
     category: "psykisk",
     kind: "scale10",
     description: "Irritabilitet og kort lunte",
-    storage: "mood",
+    storage: "irritability",
     color: "#ff9500",
   },
   {
@@ -196,7 +196,7 @@ export const SYMPTOM_CATALOG: SymptomDef[] = [
     category: "psykisk",
     kind: "scale10",
     description: "Uro, angst eller panikkfølelse",
-    storage: "burningPain",
+    storage: "anxiety",
     color: "#ff2d55",
   },
   {
@@ -312,13 +312,13 @@ export function enabledSymptomDefs(enabledIds: string[]): SymptomDef[] {
 export function getSymptomValue(log: DailyLog, symptom: SymptomDef): number {
   switch (symptom.storage) {
     case "handParesthesia":
-      return handParesthesia(log);
+      return log.handParesthesia;
     case "brainFog":
       return log.brainFog;
-    case "mood":
-      return log.mood;
-    case "burningPain":
-      return log.burningPain;
+    case "irritability":
+      return log.irritability;
+    case "anxiety":
+      return log.anxiety;
     case "headache":
       return log.headache;
     case "hadMigraine":
@@ -351,17 +351,16 @@ export function applySymptomValue(log: DailyLog, symptom: SymptomDef, value: num
 
   switch (symptom.storage) {
     case "handParesthesia":
-      log.tinglingHands = clamp(rounded, 0, 10);
-      log.numbness = clamp(rounded, 0, 10);
+      log.handParesthesia = clamp(rounded, 0, 10);
       break;
     case "brainFog":
       log.brainFog = clamp(rounded, 0, 10);
       break;
-    case "mood":
-      log.mood = clamp(rounded, 0, 10);
+    case "irritability":
+      log.irritability = clamp(rounded, 0, 10);
       break;
-    case "burningPain":
-      log.burningPain = clamp(rounded, 0, 10);
+    case "anxiety":
+      log.anxiety = clamp(rounded, 0, 10);
       break;
     case "headache":
       log.headache = clamp(rounded, 0, 10);

@@ -1,4 +1,4 @@
-/** Pretty JSON with recursively sorted keys — matcher Mac `JSONEncoder.sortedKeys`. */
+/** Pretty JSON with recursively sorted keys — stabile backups / diff. */
 export function stringifySorted(value: unknown): string {
   return `${JSON.stringify(sortKeys(value), null, 2)}\n`;
 }

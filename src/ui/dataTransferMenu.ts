@@ -97,7 +97,7 @@ function openImportDialog(onImported: () => void): void {
         <div class="editor-body">
           <p class="hint">
             Velg om importen skal slås sammen med det du har, eller erstatte eksisterende data.
-            Støtter JSON-backup fra HelseApp (Mac/web). Maks filstørrelse:
+            Støtter JSON-backup fra HelseApp Web. Maks filstørrelse:
             ${formatMaxImportSize()}.
           </p>
 

@@ -106,7 +106,6 @@ function appendContextComparison(
   });
 }
 
-/** Matcher Mac `HealthInsightsEngine.insights(from:)`. */
 export function buildInsights(logs: DailyLog[]): HealthInsight[] {
   const today = toDateKey(new Date());
   const start30 = addDays(today, -29);
@@ -132,7 +131,7 @@ export function buildInsights(logs: DailyLog[]): HealthInsight[] {
   appendSymptomInsight(results, logs14, "headache", "hodepine", "red", (log) => log.headache);
   appendSymptomInsight(results, logs14, "fatigue", "utmattelse", "orange", (log) => log.fatigue);
   appendSymptomInsight(results, logs14, "brainFog", "hjernetåke", "teal", (log) => log.brainFog);
-  appendSymptomInsight(results, logs14, "irritability", "irritasjon", "orange", (log) => log.mood);
+  appendSymptomInsight(results, logs14, "irritability", "irritasjon", "orange", (log) => log.irritability);
 
   appendContextComparison(
     results,

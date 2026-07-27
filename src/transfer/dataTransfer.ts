@@ -18,9 +18,9 @@ import {
   clampTrackerValue,
   createId,
   DEFAULT_SETTINGS,
-  handParesthesia,
   LAB_TEST_TYPES,
   MEDICATION_KINDS,
+  normalizeDailyLog,
   TRACKER_TYPES,
   type AppSettings,
   type DailyLog,
@@ -42,7 +42,8 @@ import {
 
 export { IMPORT_LIMITS, formatMaxImportSize } from "./importLimits";
 
-export const EXPORT_FORMAT_VERSION = 2;
+/** v3 = web-only feltnavn. Import støtter fortsatt v1/v2 (inkl. eldre feltnavn). */
+export const EXPORT_FORMAT_VERSION = 3;
 
 export type ImportMode = "merge" | "replace";
 
@@ -94,7 +95,7 @@ function isDateKey(value: string): boolean {
   return toDateKey(date) === value;
 }
 
-/** Legacy v1 UTC dates: shift +1 calendar day (same as Mac). */
+/** Eldre eksport (v1): datoer lagret i UTC-kalenderdag — skift +1. */
 function shiftDateKey(dateKey: string, days: number): string {
   const date = parseDateKey(dateKey);
   date.setDate(date.getDate() + days);
@@ -120,24 +121,28 @@ function downloadJson(filename: string, data: unknown): void {
   URL.revokeObjectURL(url);
 }
 
+function pickNumber(record: Record<string, unknown>, preferred: string, ...fallbacks: string[]): number {
+  if (preferred in record) return asNumber(record[preferred]);
+  for (const key of fallbacks) {
+    if (key in record) return asNumber(record[key]);
+  }
+  return 0;
+}
+
 function dailyLogToExport(log: DailyLog) {
-  const paresthesia = handParesthesia(log);
   return {
     date: log.date,
     healthValue: log.healthValue,
     note: log.note,
     hadB12Injection: log.hadB12Injection,
     medications: [...log.medications].sort((a, b) => a.localeCompare(b, "nb")),
-    tinglingHands: paresthesia,
-    burningPain: log.burningPain,
-    numbness: log.numbness,
+    handParesthesia: log.handParesthesia,
     balanceIssues: log.balanceIssues,
     brainFog: log.brainFog,
+    irritability: log.irritability,
+    anxiety: log.anxiety,
     headache: log.headache,
     hadMigraine: log.hadMigraine,
-    mood: log.mood,
-    irritability: log.mood,
-    anxiety: log.burningPain,
     hadOrthostaticEpisode: log.hadOrthostaticEpisode,
     orthostaticSeverity: log.orthostaticSeverity,
     nausea: log.nausea,
@@ -146,14 +151,8 @@ function dailyLogToExport(log: DailyLog) {
     constipation: log.constipation,
     sleepHours: log.sleepHours,
     fatigue: log.fatigue,
-    hrv: log.hrv,
-    sleepScore: log.sleepScore,
-    stressLevel: log.stressLevel,
-    restingHeartRate: log.restingHeartRate,
-    bodyBattery: log.bodyBattery,
     contextPoorSleep: log.contextPoorSleep,
     contextStress: log.contextStress,
-    contextMenstruation: log.contextMenstruation,
     contextExercise: log.contextExercise,
     contextAlcohol: log.contextAlcohol,
     contextTravel: log.contextTravel,
@@ -173,15 +172,12 @@ function parseDailyLogRecord(
   const healthValue = asNumber(record.healthValue, NaN);
   if (!date || healthValue < 1 || healthValue > 10) return null;
 
-  const numbness = asNumber(record.numbness);
-  const decodedTingling = asNumber(record.tinglingHands);
-  let burningPain = asNumber(record.burningPain);
-  let mood = asNumber(record.mood);
-  const irritability = asNumber(record.irritability);
-  const anxiety = asNumber(record.anxiety);
-
-  if (mood === 0 && irritability > 0) mood = irritability;
-  if (burningPain === 0 && anxiety > 0) burningPain = anxiety;
+  const irritability = pickNumber(record, "irritability", "mood");
+  const anxiety = pickNumber(record, "anxiety", "burningPain");
+  const handParesthesia =
+    "handParesthesia" in record
+      ? asNumber(record.handParesthesia)
+      : Math.max(asNumber(record.tinglingHands), asNumber(record.numbness));
 
   let diarrhea = asNumber(record.diarrhea);
   const constipation = asNumber(record.constipation);
@@ -196,18 +192,17 @@ function parseDailyLogRecord(
     .slice(0, IMPORT_LIMITS.maxMedications)
     .sort((a, b) => a.localeCompare(b, "nb"));
 
-  return {
+  return normalizeDailyLog({
     date,
     healthValue: Math.round(healthValue),
     note: truncateText(asString(record.note), IMPORT_LIMITS.maxNoteChars),
     hadB12Injection: asBool(record.hadB12Injection),
     medications,
-    tinglingHands: Math.max(decodedTingling, numbness),
-    numbness,
+    handParesthesia,
     balanceIssues: asNumber(record.balanceIssues),
     brainFog: asNumber(record.brainFog),
-    mood,
-    burningPain,
+    irritability,
+    anxiety,
     headache: asNumber(record.headache),
     hadMigraine: asBool(record.hadMigraine),
     hadOrthostaticEpisode: asBool(record.hadOrthostaticEpisode),
@@ -218,19 +213,13 @@ function parseDailyLogRecord(
     constipation,
     sleepHours: asNumber(record.sleepHours),
     fatigue: asNumber(record.fatigue),
-    hrv: asNumber(record.hrv),
-    sleepScore: asNumber(record.sleepScore),
-    stressLevel: asNumber(record.stressLevel),
-    restingHeartRate: asNumber(record.restingHeartRate),
-    bodyBattery: asNumber(record.bodyBattery),
     contextPoorSleep: asBool(record.contextPoorSleep),
     contextStress: asBool(record.contextStress),
-    contextMenstruation: asBool(record.contextMenstruation),
     contextExercise: asBool(record.contextExercise),
     contextAlcohol: asBool(record.contextAlcohol),
     contextTravel: asBool(record.contextTravel),
     extraSymptoms: parseExtraSymptoms(record.extraSymptoms),
-  };
+  });
 }
 
 function parseExtraSymptoms(raw: unknown): Record<string, number> {

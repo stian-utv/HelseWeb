@@ -47,12 +47,11 @@ export type DailyLog = {
   hadB12Injection: boolean;
   medications: string[];
 
-  tinglingHands: number;
-  numbness: number;
+  handParesthesia: number;
   balanceIssues: number;
   brainFog: number;
-  mood: number;
-  burningPain: number;
+  irritability: number;
+  anxiety: number;
   headache: number;
   hadMigraine: boolean;
   hadOrthostaticEpisode: boolean;
@@ -66,20 +65,13 @@ export type DailyLog = {
   sleepHours: number;
   fatigue: number;
 
-  hrv: number;
-  sleepScore: number;
-  stressLevel: number;
-  restingHeartRate: number;
-  bodyBattery: number;
-
   contextPoorSleep: boolean;
   contextStress: boolean;
-  contextMenstruation: boolean;
   contextExercise: boolean;
   contextAlcohol: boolean;
   contextTravel: boolean;
 
-  /** Ekstra B12-symptomer uten egne Mac-felt. */
+  /** Symptomer uten eget toppnivå-felt (katalog storage: "extra"). */
   extraSymptoms: Record<string, number>;
 };
 
@@ -144,12 +136,11 @@ export function createEmptyDailyLog(date: string, healthValue = 5): DailyLog {
     note: "",
     hadB12Injection: false,
     medications: [],
-    tinglingHands: 0,
-    numbness: 0,
+    handParesthesia: 0,
     balanceIssues: 0,
     brainFog: 0,
-    mood: 0,
-    burningPain: 0,
+    irritability: 0,
+    anxiety: 0,
     headache: 0,
     hadMigraine: false,
     hadOrthostaticEpisode: false,
@@ -160,14 +151,8 @@ export function createEmptyDailyLog(date: string, healthValue = 5): DailyLog {
     constipation: 0,
     sleepHours: 0,
     fatigue: 0,
-    hrv: 0,
-    sleepScore: 0,
-    stressLevel: 0,
-    restingHeartRate: 0,
-    bodyBattery: 0,
     contextPoorSleep: false,
     contextStress: false,
-    contextMenstruation: false,
     contextExercise: false,
     contextAlcohol: false,
     contextTravel: false,
@@ -175,17 +160,76 @@ export function createEmptyDailyLog(date: string, healthValue = 5): DailyLog {
   };
 }
 
-/** Prikking/nummenhet — max av tinglingHands og numbness (som Mac). */
-export function handParesthesia(log: Pick<DailyLog, "tinglingHands" | "numbness">): number {
-  return Math.max(log.tinglingHands, log.numbness);
+/** Eldre feltnavn fra IndexedDB / JSON v2 (før web-opprydding). */
+type LegacyDailyLogFields = {
+  tinglingHands?: number;
+  numbness?: number;
+  mood?: number;
+  burningPain?: number;
+};
+
+function asFiniteNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-export function normalizeDailyLog(partial: Partial<DailyLog> & { date: string }): DailyLog {
+/**
+ * Normaliserer en daglogg til gjeldende modell.
+ * Mapper også legacy-felt (mood → irritability, osv.) fra eldre lagring/eksport.
+ */
+export function normalizeDailyLog(
+  partial: Partial<DailyLog> & { date: string } & LegacyDailyLogFields &
+    Record<string, unknown>,
+): DailyLog {
+  const base = createEmptyDailyLog(partial.date, partial.healthValue ?? 5);
+  const legacy = partial as LegacyDailyLogFields;
+
+  const handParesthesia =
+    partial.handParesthesia !== undefined
+      ? asFiniteNumber(partial.handParesthesia)
+      : Math.max(asFiniteNumber(legacy.tinglingHands), asFiniteNumber(legacy.numbness));
+
+  const irritability =
+    partial.irritability !== undefined
+      ? asFiniteNumber(partial.irritability)
+      : asFiniteNumber(legacy.mood);
+
+  const anxiety =
+    partial.anxiety !== undefined
+      ? asFiniteNumber(partial.anxiety)
+      : asFiniteNumber(legacy.burningPain);
+
   return {
-    ...createEmptyDailyLog(partial.date, partial.healthValue ?? 5),
-    ...partial,
-    medications: partial.medications ?? [],
-    extraSymptoms: { ...(partial.extraSymptoms ?? {}) },
+    ...base,
+    healthValue: asFiniteNumber(partial.healthValue, base.healthValue),
+    note: typeof partial.note === "string" ? partial.note : base.note,
+    hadB12Injection: Boolean(partial.hadB12Injection),
+    medications: Array.isArray(partial.medications)
+      ? partial.medications.filter((item): item is string => typeof item === "string")
+      : [],
+    handParesthesia,
+    balanceIssues: asFiniteNumber(partial.balanceIssues),
+    brainFog: asFiniteNumber(partial.brainFog),
+    irritability,
+    anxiety,
+    headache: asFiniteNumber(partial.headache),
+    hadMigraine: Boolean(partial.hadMigraine),
+    hadOrthostaticEpisode: Boolean(partial.hadOrthostaticEpisode),
+    orthostaticSeverity: asFiniteNumber(partial.orthostaticSeverity),
+    nausea: asFiniteNumber(partial.nausea),
+    bloating: asFiniteNumber(partial.bloating),
+    diarrhea: asFiniteNumber(partial.diarrhea),
+    constipation: asFiniteNumber(partial.constipation),
+    sleepHours: asFiniteNumber(partial.sleepHours),
+    fatigue: asFiniteNumber(partial.fatigue),
+    contextPoorSleep: Boolean(partial.contextPoorSleep),
+    contextStress: Boolean(partial.contextStress),
+    contextExercise: Boolean(partial.contextExercise),
+    contextAlcohol: Boolean(partial.contextAlcohol),
+    contextTravel: Boolean(partial.contextTravel),
+    extraSymptoms:
+      partial.extraSymptoms && typeof partial.extraSymptoms === "object"
+        ? { ...(partial.extraSymptoms as Record<string, number>) }
+        : {},
   };
 }
 

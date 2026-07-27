@@ -19,6 +19,7 @@ import {
   clampTrackerValue,
   createEmptyDailyLog,
   DEFAULT_SETTINGS,
+  normalizeDailyLog,
   type DailyLog,
   type Medication,
   type Tracker,
@@ -348,15 +349,14 @@ function collectLog(
   return next;
 }
 
-/** Behold verdier for deaktiverte symptomer og klokkedata fra eksisterende logg. */
+/** Behold verdier for deaktiverte symptomer fra eksisterende logg. */
 function normalizePreservingExtras(base: DailyLog, dateKey: string): DailyLog {
-  return {
-    ...createEmptyDailyLog(dateKey),
+  return normalizeDailyLog({
     ...base,
     date: dateKey,
     medications: [...base.medications],
     extraSymptoms: { ...base.extraSymptoms },
-  };
+  });
 }
 
 function collectTrackerValues(

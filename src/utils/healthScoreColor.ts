@@ -1,4 +1,4 @@
-/** Matcher Mac `HealthScoreColor.background(for:)` — HSB hue 0→0.33, sat 0.65, brightness 0.92 */
+/** Bakgrunnsfarge for helsescore 1–10 (HSB hue 0→0.33, sat 0.65, brightness 0.92). */
 export function healthScoreBackground(score: number | null | undefined): string {
   if (score == null || score < 1 || score > 10) {
     return "rgba(128, 128, 128, 0.15)";

@@ -304,7 +304,7 @@ export async function replaceTrackerValuesForDate(
   });
 }
 
-// ——— Lab results (for Mac JSON round-trip) ———
+// ——— Lab results ———
 
 export async function listLabResults(): Promise<LabResult[]> {
   const items = await withStore<LabResult[]>("labResults", "readonly", (store) => store.getAll());

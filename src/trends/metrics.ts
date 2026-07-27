@@ -5,7 +5,7 @@ import {
   type SymptomDef,
 } from "../symptoms/catalog";
 import { storageToUiScale } from "../symptoms/uiScale";
-import { handParesthesia, type DailyLog, type Medication, type Tracker, type TrackerValue } from "../types";
+import type { DailyLog, Medication, Tracker, TrackerValue } from "../types";
 
 export type MetricGroup = "wellness" | "treatment";
 
@@ -178,14 +178,6 @@ export function normalizedValue(
       normalized: (raw / 3) * 10,
       rawDescription: raw === 1 ? "Lett" : raw === 2 ? "Moderat" : "Kraftig",
     };
-  }
-
-  // handParesthesia uses max of fields
-  if (def.id === "handParesthesia") {
-    const value = handParesthesia(log);
-    return value > 0
-      ? { date, normalized: value, rawDescription: String(storageToUiScale(value)) }
-      : null;
   }
 
   if (def.kind === "scale10") {

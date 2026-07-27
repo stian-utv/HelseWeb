@@ -107,7 +107,7 @@ export async function renderTrackersPage(root: HTMLElement): Promise<void> {
     });
   });
 
-  // Card tap opens editor (like Mac)
+  // Card tap opens editor
   root.querySelectorAll<HTMLElement>(".entity-card").forEach((card) => {
     card.addEventListener("click", (event) => {
       if ((event.target as HTMLElement).closest("button")) return;

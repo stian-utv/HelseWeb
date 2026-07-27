@@ -57,7 +57,7 @@ button {
   min-height: 100vh;
 }
 
-/* ——— App shell (Mac NavigationSplitView) ——— */
+/* ——— App shell ——— */
 
 .app-shell {
   display: grid;
