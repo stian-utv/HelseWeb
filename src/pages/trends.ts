@@ -107,8 +107,8 @@ function renderChart(
   period: DatePeriod,
 ): string {
   const width = 920;
-  const height = state.pickerExpanded ? 320 : 440;
-  const pad = { top: 20, right: 16, bottom: 36, left: 36 };
+  const height = state.pickerExpanded ? 420 : 640;
+  const pad = { top: 24, right: 16, bottom: 40, left: 40 };
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
 
