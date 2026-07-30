@@ -217,7 +217,11 @@ function medicationSection(medications: Medication[], selected: string[]): strin
     <details class="detail-card collapsible" ${open ? "open" : ""}>
       <summary>
         <span>Medisin og tilskudd</span>
-        <span class="summary-hint">${selected.length > 0 ? selected.join(", ") : "Ingen tatt i dag"}</span>
+        <span class="summary-hint">${
+          selected.length > 0
+            ? selected.join(", ")
+            : "Ingen tatt i dag · trykk for å registrere"
+        }</span>
       </summary>
       <div class="collapsible-body">
         ${medications
@@ -302,7 +306,7 @@ function trackersSection(
         <span class="summary-hint">${
           recordedCount > 0
             ? `${recordedCount} registrert · trykk for å endre`
-            : "Trykk for å registrere"
+            : "Ingen registrert · trykk for å åpne"
         }</span>
       </summary>
       <div class="collapsible-body">
@@ -459,6 +463,11 @@ export async function openDayDetail(options: DayDetailOptions): Promise<void> {
               <details class="detail-card collapsible" ${hasContext(log) ? "open" : ""}>
                 <summary>
                   <span>Dagskontekst</span>
+                  <span class="summary-hint">${
+                    hasContext(log)
+                      ? "Valgt for dagen · trykk for å endre"
+                      : "Ingen valgt · trykk for å åpne"
+                  }</span>
                 </summary>
                 <div class="collapsible-body context-grid">
                   <label class="checkbox-row"><input type="checkbox" name="contextPoorSleep" ${log.contextPoorSleep ? "checked" : ""} /><span>Dårlig søvn</span></label>
